@@ -1,3 +1,5 @@
+import 'dart:ffi';
+import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -26,14 +28,28 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+typedef putf_func = Int32 Function(Pointer<Utf8>);
+typedef Putf = int Function(Pointer<Utf8>);
+
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  void _putf(String string) {
+    final libc = DynamicLibrary.open('libc.so.6');
+    final putf = libc.lookup<NativeFunction<putf_func>>('puts').asFunction<Putf>();
+    putf(Utf8.toUtf8(string));
+
+    // TODO: should fflush via ffi.
+    print('flush stdout');
+    return;
+  }
+
   void _callQsort() {
-    print("qsort!");
+    _putf('_callQsort start');
     setState(() {
       _counter++;
     });
+    _putf('_callQsort end');
   }
 
   @override
